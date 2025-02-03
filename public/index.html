@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amicale Légion Étrangère Magyar Közösség</title>
+  <!-- Google Fonts: Roboto -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Fejléc és navigáció -->
+  <header>
+    <nav class="navbar">
+      <div class="container">
+        <div class="logo">
+          <a href="#">Légion Magyar</a>
+        </div>
+        <div class="menu-toggle" id="mobile-menu">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </div>
+        <ul class="nav" id="nav-menu">
+          <li><a href="#home">Főoldal</a></li>
+          <li><a href="#about">Bemutatkozás</a></li>
+          <li><a href="#news">Hírek</a></li>
+          <li><a href="#webshop">Webshop</a></li>
+          <li><a href="#supporters">Támogatók</a></li>
+          <li><a href="admin.html">Admin</a></li>
+        </ul>
+      </div>
+    </nav>
+    <!-- Hero szekció -->
+    <section class="hero" id="home">
+      <div class="hero-content">
+        <h1>Amicale Légion Étrangère Magyar Közösség</h1>
+        <p>Hivatalos honlap – Modern megjelenés, hagyományos értékek</p>
+      </div>
+    </section>
+  </header>
+
+  <!-- Fő tartalom -->
+  <main>
+    <!-- Bemutatkozás -->
+    <section id="about" class="section about">
+      <div class="container">
+        <h2>Bemutatkozás</h2>
+        <p>Üdvözöljük a hivatalos honlapunkon! Az Amicale Légion Étrangère magyar közössége összekapcsolja a hagyományos és a modern értékeket. Ismerje meg történetünket és céljainkat!</p>
+      </div>
+    </section>
+
+    <!-- Hírek -->
+    <section id="news" class="section news">
+      <div class="container">
+        <h2>Hírek</h2>
+        <div id="news-container"></div>
+      </div>
+    </section>
+
+    <!-- Webshop -->
+    <section id="webshop" class="section webshop">
+      <div class="container">
+        <h2>Webshop</h2>
+        <div class="products">
+          <div class="product">
+            <img src="https://via.placeholder.com/300x200?text=Termék+1" alt="Termék 1">
+            <h3>Termék 1</h3>
+            <p>Rövid leírás a termékről.</p>
+            <button>Vásárlás</button>
+          </div>
+          <div class="product">
+            <img src="https://via.placeholder.com/300x200?text=Termék+2" alt="Termék 2">
+            <h3>Termék 2</h3>
+            <p>Rövid leírás a termékről.</p>
+            <button>Vásárlás</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Támogatók -->
+    <section id="supporters" class="section supporters">
+      <div class="container">
+        <h2>Támogatók</h2>
+        <p>Támogassa a közösségünket! Az alábbi űrlap segítségével könnyen adományozhat.</p>
+        <form id="donation-form">
+          <input type="text" name="name" placeholder="Név" required>
+          <input type="email" name="email" placeholder="Email" required>
+          <input type="number" name="amount" placeholder="Összeg (Ft)" required>
+          <button type="submit">Adományozok</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Lábléc -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Amicale Légion Étrangère Magyar Közösség. Minden jog fenntartva.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

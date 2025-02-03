@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Felület - Amicale Légion Étrangère Magyar Közösség</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- TinyMCE betöltése az API kulccsal -->
+  <script src="https://cdn.tiny.cloud/1/5wdn6sz1b0jmlbdkv0vsgp01fvgakjt11rqoyltu76784mlw/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+  <style>
+    .admin-container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .admin-container h1, .admin-container h2, .admin-container h3 {
+      text-align: center;
+    }
+    .admin-container form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .admin-container input,
+    .admin-container textarea,
+    .admin-container button {
+      padding: 10px;
+      font-size: 1rem;
+    }
+    .admin-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .admin-tabs button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .admin-tab {
+      margin-bottom: 20px;
+    }
+    .admin-tab div {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- Bejelentkezési szekció -->
+    <div id="login-section">
+      <h1>Admin Bejelentkezés</h1>
+      <form id="login-form" method="post" action="#">
+        <label for="username">Felhasználónév:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Jelszó:</label>
+        <input type="password" id="password" name="password" required>
+        <!-- Checkbox a jelszó megjelenítéséhez -->
+        <label>
+          <input type="checkbox" id="toggle-password">
+          Jelszó megjelenítése
+        </label>
+        <button type="submit">Bejelentkezés</button>
+      </form>
+      <div id="login-error" style="color: red;"></div>
+    </div>
+
+    <!-- Dashboard szekció (rejtett, amíg nincs bejelentkezve) -->
+    <div id="dashboard-section" style="display:none;">
+      <h2>Admin Dashboard</h2>
+      <button id="logout-btn">Kijelentkezés</button>
+      <!-- Tabok a hírek és termékek kezeléséhez -->
+      <div class="admin-tabs">
+        <button data-tab="news">Hírek kezelése</button>
+        <button data-tab="products">Termékek kezelése</button>
+      </div>
+
+      <!-- Hírek kezelése -->
+      <div id="news-tab" class="admin-tab" style="display:none;">
+        <h3>Hírek kezelése</h3>
+        <input type="hidden" id="news-id">
+        <form id="news-form" novalidate>
+          <input type="text" id="news-title" placeholder="Hír címe" required>
+          <!-- TinyMCE szerkesztő a hír tartalmához -->
+          <textarea id="news-content" placeholder="Hír tartalma" required></textarea>
+          <input type="text" id="news-media" placeholder="Media URL (kép, YouTube, videó, stb.)">
+          <!-- Fájl feltöltés -->
+          <label for="media-upload">Válassz média fájlt:</label>
+          <input type="file" id="media-upload">
+          <button type="button" id="upload-btn">Feltöltés</button>
+          <button type="submit" id="news-submit-btn">Hír hozzáadása</button>
+          <button type="button" id="news-cancel-btn" style="display:none;">Mégse</button>
+        </form>
+        <div id="news-list"></div>
+      </div>
+
+      <!-- Termékek kezelése -->
+      <div id="products-tab" class="admin-tab" style="display:none;">
+        <h3>Termékek kezelése</h3>
+        <form id="product-form">
+          <input type="text" id="product-name" placeholder="Termék neve" required>
+          <input type="text" id="product-description" placeholder="Termék leírása" required>
+          <input type="number" id="product-price" placeholder="Ár (Ft)" required>
+          <button type="submit">Termék hozzáadása</button>
+        </form>
+        <div id="products-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inicializáljuk a TinyMCE-t -->
+  <script>
+    tinymce.init({
+      selector: '#news-content',
+      plugins: 'image link media code',
+      toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright | image link media | code',
+      menubar: false,
+      setup: function(editor) {
+        editor.on('init', function(e) {
+          console.log("TinyMCE initialized");
+        });
+      }
+    });
+  </script>
+  <script src="admin.js"></script>
+</body>
+</html>
