@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log("Sikeres bejelentkezés:", data);
       loginSection.style.display = 'none';
       dashboardSection.style.display = 'block';
-      loadNews();
+      loadNews();  // Hírek betöltése keresés nélkül
       loadProducts();
     })
     .catch(err => {
@@ -77,17 +77,30 @@ document.addEventListener('DOMContentLoaded', function() {
     loginSection.style.display = 'block';
   });
   
-  // Hírek betöltése az admin felületre
-  function loadNews() {
-    console.log("Hírek betöltése az admin felületen...");
+  // Hírek betöltése az admin felületre, opcionálisan keresési lekérdezéssel
+  function loadNews(query = "") {
+    console.log("Hírek betöltése az admin felületen, keresési lekérdezéssel:", query);
     fetch('/api/news')
       .then(res => res.json())
       .then(data => {
         const newsList = document.getElementById('news-list');
         newsList.innerHTML = '';
-        data.forEach(item => {
-          const div = document.createElement('div');
-          div.classList.add('news-item');
+        // Szűrés: csak azok a hírek jelennek meg, amelyek címében vagy tartalmában szerepel a keresett kifejezés
+        const filteredData = data.filter(item => {
+          return item.title.toLowerCase().includes(query.toLowerCase()) ||
+                 item.content.toLowerCase().includes(query.toLowerCase());
+        });
+        filteredData.forEach(item => {
+          // Időpont formázása: YYYY-MM-DD HH:MM
+          let timestamp = "";
+          if (item.timestamp) {
+            const date = new Date(item.timestamp);
+            timestamp = date.getFullYear() + '-' +
+                        ('0' + (date.getMonth() + 1)).slice(-2) + '-' +
+                        ('0' + date.getDate()).slice(-2) + ' ' +
+                        ('0' + date.getHours()).slice(-2) + ':' +
+                        ('0' + date.getMinutes()).slice(-2);
+          }
           let mediaHtml = '';
           if (item.media) {
             if(item.media.match(/\.(jpg|jpeg|png|gif)$/i)) {
@@ -100,13 +113,15 @@ document.addEventListener('DOMContentLoaded', function() {
                  </div>` 
                 : `<a href="${item.media}" target="_blank">${item.media}</a>`;
             }
-             else if(item.media.match(/\.(mp4|webm)$/i)) {
+            else if(item.media.match(/\.(mp4|webm)$/i)) {
               mediaHtml = `<video src="${item.media}" width="100" muted style="cursor:pointer;" onmouseover="this.play()" onmouseout="this.pause();this.currentTime=0;"></video>`;
             } else {
               mediaHtml = `<a href="${item.media}" target="_blank">${item.media}</a>`;
             }
           }
-          div.innerHTML = `<strong>${item.title}</strong><br>${item.content}<br>${mediaHtml}<br>`;
+          const div = document.createElement('div');
+          div.classList.add('news-item');
+          div.innerHTML = `<strong>${item.title} (${timestamp})</strong><br>${item.content}<br>${mediaHtml}<br>`;
           
           // Edit gomb
           const editBtn = document.createElement('button');
@@ -188,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(res => res.json())
       .then(() => {
         clearNewsForm();
-        loadNews();
+        loadNews(document.getElementById('news-search').value);
       })
       .catch(err => console.error("Frissítési hiba:", err));
     } else {
@@ -202,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(() => {
         newsForm.reset();
         tinymce.get('news-content').setContent('');
-        loadNews();
+        loadNews(document.getElementById('news-search').value);
       })
       .catch(err => console.error("Hír hozzáadási hiba:", err));
     }
@@ -215,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(res => res.json())
     .then(() => {
-      loadNews();
+      loadNews(document.getElementById('news-search').value);
     })
     .catch(err => console.error("Hír törlési hiba:", err));
   }
@@ -291,4 +306,12 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(err => console.error("Termék hozzáadási hiba:", err));
   });
+  
+  // Keresősáv: hírek szűrése
+  const newsSearchInput = document.getElementById('news-search');
+  if (newsSearchInput) {
+    newsSearchInput.addEventListener('input', function() {
+      loadNews(newsSearchInput.value);
+    });
+  }
 });

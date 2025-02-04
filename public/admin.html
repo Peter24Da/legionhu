@@ -50,6 +50,22 @@
       padding: 10px;
       margin-top: 10px;
     }
+    /* Stílus a keresőmezőhöz */
+    #news-search-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    #news-search {
+      flex-grow: 1;
+      padding: 8px;
+      font-size: 1rem;
+    }
+    .search-icon {
+      padding: 8px;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -98,6 +114,11 @@
           <button type="submit" id="news-submit-btn">Hír hozzáadása</button>
           <button type="button" id="news-cancel-btn" style="display:none;">Mégse</button>
         </form>
+        <!-- A keresőmező közvetlenül a hír hozzáadása gomb alá került, a hírek listája elé -->
+        <div id="news-search-container">
+          <input type="text" id="news-search" placeholder="Keresés...">
+          <span class="search-icon">&#128269;</span>
+        </div>
         <div id="news-list"></div>
       </div>
 
@@ -123,7 +144,7 @@
       toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright | image link media | code',
       menubar: false,
       file_picker_callback: function(callback, value, meta) {
-        // Megnyitjuk a saját fájlkezelő felületet. A meta.filetype lehet "image", "media" vagy "file".
+        // Megnyitjuk a saját fájlkezelő felületet a megfelelő típus szerint.
         var width = window.innerWidth * 0.8;
         var height = window.innerHeight * 0.8;
         tinymce.activeEditor.windowManager.openUrl({

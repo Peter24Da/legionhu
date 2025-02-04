@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function() {
     donationForm.reset();
   });
 
-  // Hírek lekérése az index oldalhoz
+  // Hírek lekérése a főoldali hírfolyamhoz
   function loadNewsIndex() {
     fetch('/api/news')
       .then(response => response.json())
@@ -24,6 +24,16 @@ document.addEventListener("DOMContentLoaded", function() {
         if (newsContainer) {
           newsContainer.innerHTML = '';
           data.forEach(item => {
+            // Időpont formázása: YYYY-MM-DD HH:MM
+            let formatted = "";
+            if (item.timestamp) {
+              const date = new Date(item.timestamp);
+              formatted = date.getFullYear() + '-' +
+                          ('0' + (date.getMonth()+1)).slice(-2) + '-' +
+                          ('0' + date.getDate()).slice(-2) + ' ' +
+                          ('0' + date.getHours()).slice(-2) + ':' +
+                          ('0' + date.getMinutes()).slice(-2);
+            }
             let mediaHtml = '';
             if (item.media) {
               if (item.media.match(/\.(jpg|jpeg|png|gif)$/i)) {
@@ -41,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const embedUrl = getYouTubeEmbedUrl(item.media);
                 mediaHtml = embedUrl 
                   ? `<div class="responsive-iframe">
-                       <iframe src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                       <iframe src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
                      </div>` 
                   : `<a href="${item.media}" target="_blank">${item.media}</a>`;
               } else if (item.media.match(/\.(mp4|webm)$/i)) {
@@ -52,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             const article = document.createElement('article');
             article.classList.add('news-item');
-            article.innerHTML = `<h3>${item.title}</h3><p>${item.content}</p>${mediaHtml}`;
+            article.innerHTML = `<h3>${item.title} (${formatted})</h3><p>${item.content}</p>${mediaHtml}`;
             newsContainer.appendChild(article);
           });
         }
@@ -61,7 +71,6 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   loadNewsIndex();
-  // Az automatikus 5 másodperces frissítés eltávolítva, mert ez okozta a YouTube videók lejátszásának megszakadását.
-  // Ha szeretnéd újra bekapcsolni, például 30 másodperces időközönként, használd az alábbi sort:
+  // Ha szeretnéd frissíteni az adatokat időközönként, beállíthatsz egy időzítőt
   // setInterval(loadNewsIndex, 30000);
 });

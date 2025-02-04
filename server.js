@@ -5,10 +5,34 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs'); // Fájlrendszer modul
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Győződjünk meg róla, hogy a "data" mappa létezik
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir);
+}
+const NEWS_FILE = path.join(dataDir, 'news.json');
+
+// Segédfüggvények a hírek fájlba mentéséhez
+function readNews() {
+  if (!fs.existsSync(NEWS_FILE)) {
+    fs.writeFileSync(NEWS_FILE, JSON.stringify([]));
+  }
+  const content = fs.readFileSync(NEWS_FILE, 'utf8');
+  try {
+    return JSON.parse(content);
+  } catch (err) {
+    return [];
+  }
+}
+
+function writeNews(news) {
+  fs.writeFileSync(NEWS_FILE, JSON.stringify(news, null, 2));
+}
 
 // Multer konfiguráció: fájlok a "public/uploads" mappába kerülnek
 const storage = multer.diskStorage({
@@ -25,53 +49,60 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// Példaképp adatok tárolása
-let newsItems = [
-  { id: 1, title: "Új esemény bejelentése", content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", media: "" },
-  { id: 2, title: "Legfrissebb hírek", content: "Quisque commodo magna ac mauris congue, vel tempus eros laoreet.", media: "" }
-];
-
+// Példaképp termékadatok
 let products = [
   { id: 1, name: "Termék 1", description: "Rövid leírás a termékről", price: 1000 },
   { id: 2, name: "Termék 2", description: "Rövid leírás a termékről", price: 2000 }
 ];
 
-// Főoldal
+// Root endpoint
 app.get('/', (req, res) => {
   res.send("Backend sablon - Amicale Légion Étrangère Magyar Közösség");
 });
 
-// Hírek API
+// Hírek API (perzisztens tárolás JSON fájlban)
 app.get('/api/news', (req, res) => {
+  const newsItems = readNews();
   res.json(newsItems);
 });
+
 app.post('/api/news', (req, res) => {
+  let newsItems = readNews();
   const newItem = {
-    id: newsItems.length + 1,
+    id: newsItems.length ? newsItems[newsItems.length - 1].id + 1 : 1,
     title: req.body.title,
     content: req.body.content,
-    media: req.body.media || ""
+    media: req.body.media || "",
+    timestamp: new Date().toISOString()  // Elmentjük a posztolás időpontját
   };
   newsItems.push(newItem);
+  writeNews(newsItems);
   res.json(newItem);
 });
+
 app.put('/api/news/:id', (req, res) => {
+  let newsItems = readNews();
   const id = parseInt(req.params.id);
   const newsItem = newsItems.find(n => n.id === id);
   if (newsItem) {
     newsItem.title = req.body.title || newsItem.title;
     newsItem.content = req.body.content || newsItem.content;
     newsItem.media = req.body.media || newsItem.media;
+    // Az eredeti posztolási időpontot nem változtatjuk meg
+    writeNews(newsItems);
     res.json(newsItem);
   } else {
     res.status(404).json({ error: "Hír nem található" });
   }
 });
+
 app.delete('/api/news/:id', (req, res) => {
+  let newsItems = readNews();
   const id = parseInt(req.params.id);
   const index = newsItems.findIndex(n => n.id === id);
   if (index !== -1) {
     const removed = newsItems.splice(index, 1);
+    writeNews(newsItems);
     res.json(removed);
   } else {
     res.status(404).json({ error: "Hír nem található" });
@@ -82,6 +113,7 @@ app.delete('/api/news/:id', (req, res) => {
 app.get('/api/products', (req, res) => {
   res.json(products);
 });
+
 app.post('/api/products', (req, res) => {
   const newProduct = {
     id: products.length + 1,
@@ -92,6 +124,7 @@ app.post('/api/products', (req, res) => {
   products.push(newProduct);
   res.json(newProduct);
 });
+
 app.put('/api/products/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const product = products.find(p => p.id === id);
@@ -104,6 +137,7 @@ app.put('/api/products/:id', (req, res) => {
     res.status(404).json({ error: "Termék nem található" });
   }
 });
+
 app.delete('/api/products/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const index = products.findIndex(p => p.id === id);
@@ -147,7 +181,7 @@ app.post('/api/upload', upload.single('media'), (req, res) => {
 
 // Új API végpont: a szerveren feltöltött médiafájlok listázása
 app.get('/api/media', (req, res) => {
-  const type = req.query.type; // várt érték: "image", "media" vagy "file"
+  const type = req.query.type; // várható érték: "image", "media" vagy "file"
   const directory = path.join(__dirname, 'public/uploads');
   fs.readdir(directory, (err, files) => {
     if (err) {
@@ -159,7 +193,7 @@ app.get('/api/media', (req, res) => {
         url: '/uploads/' + filename
       };
     });
-    // Típus szerinti szűrés: ha "image", csak képek; ha "media", csak videók
+    // Típus szerinti szűrés
     if (type === 'image') {
       fileList = fileList.filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i));
     } else if (type === 'media') {
