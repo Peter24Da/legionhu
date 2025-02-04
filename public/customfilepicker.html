@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fájl választás</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    .option {
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    #upload-section {
+      margin-top: 20px;
+      display: none;
+    }
+    #file-input {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Fájl választás</h2>
+  <div class="option">
+    <button id="choose-server">Válassz a szerverről</button>
+  </div>
+  <div class="option">
+    <button id="upload-device">Feltöltés a készülékről</button>
+  </div>
+  <div id="upload-section">
+    <input type="file" id="file-input">
+    <button id="upload-btn">Feltöltés</button>
+  </div>
+  <script>
+    // URL paraméterek lekérése: "type" (pl. image, media, file)
+    const params = new URLSearchParams(window.location.search);
+    const fileType = params.get('type') || 'image';
+
+    document.getElementById('choose-server').addEventListener('click', function() {
+      // Küldjünk üzenetet a TinyMCE szülőablakának, hogy nyissa meg a szerver böngészőt
+      parent.postMessage({ mceAction: 'openFileManager', fileType: fileType }, '*');
+    });
+
+    document.getElementById('upload-device').addEventListener('click', function() {
+      document.getElementById('upload-section').style.display = 'block';
+    });
+
+    document.getElementById('upload-btn').addEventListener('click', function() {
+      const input = document.getElementById('file-input');
+      if (input.files.length === 0) {
+        alert("Kérlek válassz egy fájlt!");
+        return;
+      }
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('media', file);
+      fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.url) {
+          // Küldjük vissza a fájl URL-jét a TinyMCE-nek
+          parent.postMessage({ mceAction: 'fileSelected', content: data.url }, '*');
+        } else {
+          alert("Feltöltési hiba!");
+        }
+      })
+      .catch(err => {
+        console.error("Hiba a feltöltés során:", err);
+        alert("Hiba történt a feltöltés során!");
+      });
+    });
+  </script>
+</body>
+</html>

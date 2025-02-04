@@ -107,14 +107,11 @@
           <!-- TinyMCE szerkesztő a hír tartalmához -->
           <textarea id="news-content" placeholder="Hír tartalma" required></textarea>
           <input type="text" id="news-media" placeholder="Media URL (kép, YouTube, videó, stb.)">
-          <!-- Fájl feltöltés -->
-          <label for="media-upload">Válassz média fájlt:</label>
-          <input type="file" id="media-upload">
-          <button type="button" id="upload-btn">Feltöltés</button>
+          <!-- A fájl feltöltés rész eltávolításra került -->
           <button type="submit" id="news-submit-btn">Hír hozzáadása</button>
           <button type="button" id="news-cancel-btn" style="display:none;">Mégse</button>
         </form>
-        <!-- A keresőmező közvetlenül a hír hozzáadása gomb alá került, a hírek listája elé -->
+        <!-- Keresőmező a hírek listája előtt -->
         <div id="news-search-container">
           <input type="text" id="news-search" placeholder="Keresés...">
           <span class="search-icon">&#128269;</span>
@@ -136,7 +133,7 @@
     </div>
   </div>
 
-  <!-- Inicializáljuk a TinyMCE-t -->
+  <!-- TinyMCE inicializálása egyedi file pickerrel -->
   <script>
     tinymce.init({
       selector: '#news-content',
@@ -144,18 +141,28 @@
       toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright | image link media | code',
       menubar: false,
       file_picker_callback: function(callback, value, meta) {
-        // Megnyitjuk a saját fájlkezelő felületet a megfelelő típus szerint.
-        var width = window.innerWidth * 0.8;
-        var height = window.innerHeight * 0.8;
         tinymce.activeEditor.windowManager.openUrl({
-          title: 'Fájlkezelő',
-          url: '/filemanager.html?type=' + meta.filetype,
-          width: width,
-          height: height,
+          title: 'Fájl választás',
+          url: '/customfilepicker.html?type=' + meta.filetype,
+          width: window.innerWidth * 0.8,
+          height: window.innerHeight * 0.8,
           onMessage: function(api, message) {
-            // A filemanager.html visszaküldi a kiválasztott fájl URL-jét
-            callback(message.content);
-            api.close();
+            if (message.mceAction === 'fileSelected') {
+              callback(message.content);
+              api.close();
+            } else if (message.mceAction === 'openFileManager') {
+              tinymce.activeEditor.windowManager.openUrl({
+                title: 'Szerver fájlok',
+                url: '/filemanager.html?type=' + message.fileType,
+                width: window.innerWidth * 0.8,
+                height: window.innerHeight * 0.8,
+                onMessage: function(api2, message2) {
+                  callback(message2.content);
+                  api2.close();
+                }
+              });
+              api.close();
+            }
           }
         });
       },
