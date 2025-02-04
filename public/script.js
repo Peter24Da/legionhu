@@ -39,7 +39,11 @@ document.addEventListener("DOMContentLoaded", function() {
                   }
                 }
                 const embedUrl = getYouTubeEmbedUrl(item.media);
-                mediaHtml = embedUrl ? `<iframe width="100" height="56" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>` : `<a href="${item.media}" target="_blank">${item.media}</a>`;
+                mediaHtml = embedUrl 
+                  ? `<div class="responsive-iframe">
+                       <iframe src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                     </div>` 
+                  : `<a href="${item.media}" target="_blank">${item.media}</a>`;
               } else if (item.media.match(/\.(mp4|webm)$/i)) {
                 mediaHtml = `<video src="${item.media}" width="100" muted style="cursor:pointer;" onmouseover="this.play()" onmouseout="this.pause();this.currentTime=0;"></video>`;
               } else {
@@ -57,5 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   loadNewsIndex();
-  setInterval(loadNewsIndex, 5000);
+  // Az automatikus 5 másodperces frissítés eltávolítva, mert ez okozta a YouTube videók lejátszásának megszakadását.
+  // Ha szeretnéd újra bekapcsolni, például 30 másodperces időközönként, használd az alábbi sort:
+  // setInterval(loadNewsIndex, 30000);
 });

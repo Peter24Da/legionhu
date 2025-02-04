@@ -5,11 +5,12 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs'); // Fájlrendszer modul
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Multer konfiguráció: fájlok a "public/uploads" mappába
+// Multer konfiguráció: fájlok a "public/uploads" mappába kerülnek
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'public/uploads/');
@@ -35,8 +36,7 @@ let products = [
   { id: 2, name: "Termék 2", description: "Rövid leírás a termékről", price: 2000 }
 ];
 
-// API végpontok
-
+// Főoldal
 app.get('/', (req, res) => {
   res.send("Backend sablon - Amicale Légion Étrangère Magyar Közösség");
 });
@@ -143,6 +143,30 @@ app.post('/api/upload', upload.single('media'), (req, res) => {
   }
   const fileUrl = '/uploads/' + req.file.filename;
   res.json({ url: fileUrl });
+});
+
+// Új API végpont: a szerveren feltöltött médiafájlok listázása
+app.get('/api/media', (req, res) => {
+  const type = req.query.type; // várt érték: "image", "media" vagy "file"
+  const directory = path.join(__dirname, 'public/uploads');
+  fs.readdir(directory, (err, files) => {
+    if (err) {
+      return res.status(500).json({ error: "Hiba a fájlok olvasása közben." });
+    }
+    let fileList = files.map(filename => {
+      return {
+        name: filename,
+        url: '/uploads/' + filename
+      };
+    });
+    // Típus szerinti szűrés: ha "image", csak képek; ha "media", csak videók
+    if (type === 'image') {
+      fileList = fileList.filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i));
+    } else if (type === 'media') {
+      fileList = fileList.filter(file => file.name.match(/\.(mp4|webm)$/i));
+    }
+    res.json(fileList);
+  });
 });
 
 // Szerver indítása

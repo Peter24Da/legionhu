@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fájlkezelő</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .file-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+    .file-item {
+      cursor: pointer;
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      transition: box-shadow 0.3s;
+    }
+    .file-item:hover {
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .file-item img {
+      max-width: 150px;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .no-files {
+      text-align: center;
+      font-style: italic;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fájlkezelő</h1>
+  <div class="file-list" id="file-list"></div>
+
+  <script>
+    // URL paraméterek lekérése: "type" (image, media, file)
+    const params = new URLSearchParams(window.location.search);
+    // Ha nincs megadva, alapértelmezetten "image" legyen
+    const fileType = params.get('type') || 'image';
+
+    // Lekérjük a szerveren lévő fájlokat az API végpontról
+    fetch('/api/media?type=' + fileType)
+      .then(response => response.json())
+      .then(data => {
+        console.log("A szervertől érkező fájlok:", data);
+        const fileListDiv = document.getElementById('file-list');
+
+        if (!data || data.length === 0) {
+          fileListDiv.innerHTML = "<p class='no-files'>Nincsenek feltöltött fájlok.</p>";
+          return;
+        }
+
+        data.forEach(file => {
+          const div = document.createElement('div');
+          div.classList.add('file-item');
+          
+          if (fileType === 'image') {
+            const img = document.createElement('img');
+            img.src = file.url;
+            img.alt = file.name;
+            div.appendChild(img);
+          } else {
+            // Ha nem kép, akkor a fájl neve jelenik meg
+            div.textContent = file.name;
+          }
+          
+          // Kattintásra a kiválasztott fájl URL-jét elküldjük a TinyMCE-nek
+          div.addEventListener('click', function(){
+            parent.postMessage({ mceAction: 'fileSelected', content: file.url }, '*');
+          });
+          
+          fileListDiv.appendChild(div);
+        });
+      })
+      .catch(err => {
+        console.error("Hiba a fájlok betöltésekor:", err);
+        document.getElementById('file-list').innerHTML = "<p class='no-files'>Hiba történt a fájlok betöltésekor.</p>";
+      });
+  </script>
+</body>
+</html>

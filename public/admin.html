@@ -122,6 +122,22 @@
       plugins: 'image link media code',
       toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright | image link media | code',
       menubar: false,
+      file_picker_callback: function(callback, value, meta) {
+        // Megnyitjuk a saját fájlkezelő felületet. A meta.filetype lehet "image", "media" vagy "file".
+        var width = window.innerWidth * 0.8;
+        var height = window.innerHeight * 0.8;
+        tinymce.activeEditor.windowManager.openUrl({
+          title: 'Fájlkezelő',
+          url: '/filemanager.html?type=' + meta.filetype,
+          width: width,
+          height: height,
+          onMessage: function(api, message) {
+            // A filemanager.html visszaküldi a kiválasztott fájl URL-jét
+            callback(message.content);
+            api.close();
+          }
+        });
+      },
       setup: function(editor) {
         editor.on('init', function(e) {
           console.log("TinyMCE initialized");

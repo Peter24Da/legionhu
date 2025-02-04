@@ -137,7 +137,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var regExp = /^.*(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
     var match = url.match(regExp);
     if (match && match[1].length === 11) {
-      // A videó automatikus lejátszásához és mute-olásához adjuk hozzá az autoplay és mute paramétereket.
       return 'https://www.youtube.com/embed/' + match[1] + '?rel=0&autoplay=1&mute=1';
     } else {
       return null;
