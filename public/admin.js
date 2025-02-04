@@ -114,7 +114,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 : `<a href="${item.media}" target="_blank">${item.media}</a>`;
             }
             else if(item.media.match(/\.(mp4|webm)$/i)) {
-              mediaHtml = `<video src="${item.media}" width="100" muted style="cursor:pointer;" onmouseover="this.play()" onmouseout="this.pause();this.currentTime=0;"></video>`;
+              // Megjelenítjük a videó vezérlőit (controls), így a videónak lesz hangja
+              mediaHtml = `<video src="${item.media}" width="100" controls style="cursor:pointer;"></video>`;
             } else {
               mediaHtml = `<a href="${item.media}" target="_blank">${item.media}</a>`;
             }
@@ -128,6 +129,8 @@ document.addEventListener('DOMContentLoaded', function() {
           editBtn.textContent = 'Szerkesztés';
           editBtn.addEventListener('click', function() {
             populateNewsFormForEdit(item);
+            // Automatikus görgetés a TinyMCE szerkesztő konténeréhez
+            tinymce.get('news-content').getContainer().scrollIntoView({ behavior: 'smooth' });
           });
           
           // Törlés gomb
@@ -235,40 +238,42 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(err => console.error("Hír törlési hiba:", err));
   }
   
-  // Fájl feltöltés kezelése
+  // Fájl feltöltés kezelése (ha van ilyen rész a formban)
   const uploadBtn = document.getElementById('upload-btn');
-  uploadBtn.addEventListener('click', function() {
-    console.log("Feltöltés gomb kattintva");
-    const fileInput = document.getElementById('media-upload');
-    if (fileInput.files.length === 0) {
-      alert("Kérlek válassz egy fájlt!");
-      return;
-    }
-    const file = fileInput.files[0];
-    const formData = new FormData();
-    formData.append('media', file);
-    fetch('/api/upload', {
-      method: 'POST',
-      body: formData
-    })
-    .then(response => {
-      console.log("Feltöltési fetch válasz:", response);
-      return response.json();
-    })
-    .then(data => {
-      console.log("Feltöltési fetch adat:", data);
-      if (data.url) {
-        document.getElementById('news-media').value = data.url;
-        alert("Feltöltés sikeres!");
-      } else {
-        alert("Feltöltési hiba!");
+  if (uploadBtn) {
+    uploadBtn.addEventListener('click', function() {
+      console.log("Feltöltés gomb kattintva");
+      const fileInput = document.getElementById('media-upload');
+      if (fileInput.files.length === 0) {
+        alert("Kérlek válassz egy fájlt!");
+        return;
       }
-    })
-    .catch(err => {
-      console.error("Feltöltési hiba:", err);
-      alert("Hiba történt a feltöltés során!");
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('media', file);
+      fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        console.log("Feltöltési fetch válasz:", response);
+        return response.json();
+      })
+      .then(data => {
+        console.log("Feltöltési fetch adat:", data);
+        if (data.url) {
+          document.getElementById('news-media').value = data.url;
+          alert("Feltöltés sikeres!");
+        } else {
+          alert("Feltöltési hiba!");
+        }
+      })
+      .catch(err => {
+        console.error("Feltöltési hiba:", err);
+        alert("Hiba történt a feltöltés során!");
+      });
     });
-  });
+  }
   
   // Termékek betöltése
   function loadProducts() {
@@ -288,24 +293,26 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Termék űrlap beküldése
   const productForm = document.getElementById('product-form');
-  productForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const name = document.getElementById('product-name').value;
-    const description = document.getElementById('product-description').value;
-    const price = parseFloat(document.getElementById('product-price').value);
-    
-    fetch('/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, description, price })
-    })
-    .then(res => res.json())
-    .then(() => {
-      productForm.reset();
-      loadProducts();
-    })
-    .catch(err => console.error("Termék hozzáadási hiba:", err));
-  });
+  if (productForm) {
+    productForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const name = document.getElementById('product-name').value;
+      const description = document.getElementById('product-description').value;
+      const price = parseFloat(document.getElementById('product-price').value);
+      
+      fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description, price })
+      })
+      .then(res => res.json())
+      .then(() => {
+        productForm.reset();
+        loadProducts();
+      })
+      .catch(err => console.error("Termék hozzáadási hiba:", err));
+    });
+  }
   
   // Keresősáv: hírek szűrése
   const newsSearchInput = document.getElementById('news-search');
